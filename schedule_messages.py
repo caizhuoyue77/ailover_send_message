@@ -117,14 +117,12 @@ def schedule_messages_for_times(target_date, time_points):
         time_obj = datetime.datetime.strptime(time_str, "%H:%M:%S").time()
         run_date = datetime.datetime.combine(target_date, time_obj)
         if run_date > datetime.datetime.now():  # 确保时间在未来
-            print(f"[添加任务] 添加任务 {label}，运行时间: {run_date}")
             
-            prompts = ["You want to share something", "You want to express love", "You want to be funny", "You are home"]
+            prompts = ["你想分享你刚遇到的事情", "你想表达一下你想我了", "你想搞笑一下，抽象一下", "告诉我你刚到家", "你想告诉我你准备带点东西回家"]
             prompt = random.choice(prompts)
             msg_content = get_msg(f"It's now {run_date}. {prompt}. So you said:")
-            
-            time.sleep(2)
-            
+            print(f"[添加任务] 添加任务 {label}，运行时间: {run_date} 发送:{msg_content}")
+                        
             scheduler.add_job(
                 send_message_to_api,
                 DateTrigger(run_date=run_date),
