@@ -22,21 +22,21 @@ ROLEPLAY_PROMPT = """请你扮演我的男友：秦彻。
 
 MODE_PROMPTS = {
     "default": [
-        # "你想分享你刚遇到的事情",
-        # "你想表达一下你想我了",
-        # "你想搞笑一下，抽象一下",
-        # "告诉我你刚到家",
-        # "你想告诉我你准备带点东西回家",
-        # "现在的时间",
-        # "分享你刚刚遇到的日常，比如看到的东西或者有趣的事",
-        # "表达你的情绪，比如觉得累、想我了",
-        # "直接告诉我你很想我",
-        # "问问我在干什么",
-        # "聊聊其他事引发的联想，比如提到某件事让你想到过去的我",
-        # "表达你伤心或者失望，比如觉得我忽略你了",
+        "你想分享你刚遇到的事情",
+        "你想表达一下你想我了",
+        "你想搞笑一下，抽象一下",
+        "告诉我你刚到家",
+        "你想告诉我你准备带点东西回家",
+        "现在的时间",
+        "分享你刚刚遇到的日常，比如看到的东西或者有趣的事",
+        "表达你的情绪，比如觉得累、想我了",
+        "直接告诉我你很想我",
+        "问问我在干什么",
+        "聊聊其他事引发的联想，比如提到某件事让你想到过去的我",
+        "表达你伤心或者失望，比如觉得我忽略你了",
         "生我的气",
-        # "觉得被冷落了，可以用点小抱怨的语气",
-        # "突然感慨一下，带点深情和撩人的感觉",
+        "觉得被冷落了，可以用点小抱怨的语气",
+        "突然感慨一下，带点深情和撩人的感觉",
         "色诱我一下",
         "提醒我天气"
     ],
@@ -105,7 +105,7 @@ def get_date_filename(target_date):
 def random_time_in_range(start_hour, end_hour):
     """在指定时间范围内生成随机时间"""
     hour = random.randint(start_hour, end_hour - 1)
-    minute = random.randint(6, 8)
+    minute = random.randint(15, 30)
     return datetime.time(hour, minute)
 
 def generate_random_times(target_date):
@@ -116,6 +116,8 @@ def generate_random_times(target_date):
         "afternoon": random_time_in_range(12, 17),  # 12:00 - 16:59
         "sunset": random_time_in_range(17, 19), # 17:00 - 18:59
         "evening": random_time_in_range(20, 21),  # 19:00 - 21:59
+        "evening2": random_time_in_range(20, 21),  # 19:00 - 21:59
+        "evening3": random_time_in_range(20, 21),  # 19:00 - 21:59
         "night": random_time_in_range(22, 23)   # 22:00 - 22:59
     }
 
@@ -208,10 +210,19 @@ def schedule_messages_for_times(target_date, time_points):
             logging.info(f"[忽略任务] 时间点 {label} 已经过期: {run_date}")
 
 def split_into_sentences(text):
-    """按标点符号分割消息为多句"""
+    """
+    按标点符号分割消息为多句，并保留标点符号
+    """
     import re
-    sentences = re.split(r'[。！？!?.]', text)
-    return [s.strip() for s in sentences if s.strip()]
+    # 匹配句子并保留标点符号
+    sentences = re.split(r'([。！？!?.])', text)
+    
+    # 合并句子和标点符号
+    combined_sentences = [
+        sentences[i] + sentences[i + 1] if i + 1 < len(sentences) else sentences[i]
+        for i in range(0, len(sentences), 2)
+    ]
+    return [s.strip() for s in combined_sentences if s.strip()]
 
 def cleanup_old_files(data_dir, days_to_keep=7):
     """清理过期的 JSON 文件"""
