@@ -1,6 +1,7 @@
 import json
 import random
 import datetime
+import time
 import requests
 import os
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -77,6 +78,36 @@ def send_message_to_api(nickname, message):
     except requests.exceptions.RequestException as e:
         print(f"[API 调用异常] 调用失败: {e}")
 
+
+import requests
+import json
+
+def get_msg(user_message):
+    api_key = "sk-eb93b1c0ba2542239ac5a7ae8aba98ac"
+    url = "https://api.deepseek.com/chat/completions"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}"
+    }
+    payload = {
+        "model": "deepseek-chat",
+        "messages": [
+            {"role": "system", "content": "You are a role-play specialist and talks like a bad-ass loving boyfriend. Use short sentences."},
+            {"role": "user", "content": user_message}
+        ],
+        "stream": False
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, data=json.dumps(payload))
+        response.raise_for_status()  # Raise an error for HTTP status codes 4xx/5xx
+        msg = response.json()["choices"][0]["message"]["content"]
+        return msg
+    except requests.exceptions.RequestException as e:
+        return {"error": str(e)}
+
+
+
 def schedule_messages_for_times(target_date, time_points):
     """
     为指定日期和时间点添加定时消息任务
@@ -87,10 +118,17 @@ def schedule_messages_for_times(target_date, time_points):
         run_date = datetime.datetime.combine(target_date, time_obj)
         if run_date > datetime.datetime.now():  # 确保时间在未来
             print(f"[添加任务] 添加任务 {label}，运行时间: {run_date}")
+            
+            prompts = ["You want to share something", "You want to express love", "You want to be funny", "You are home"]
+            prompt = random.choice(prompts)
+            msg_content = get_msg(f"It's now {run_date}. {prompt}. So you said:")
+            
+            time.sleep(2)
+            
             scheduler.add_job(
                 send_message_to_api,
                 DateTrigger(run_date=run_date),
-                args=[NICKNAME, "hi"]
+                args=[NICKNAME, msg_content]
             )
         else:
             print(f"[忽略任务] 时间点 {label} 已经过期: {run_date}")
