@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-import itchat
+from lib import itchat
 import requests
 import io
 import os
